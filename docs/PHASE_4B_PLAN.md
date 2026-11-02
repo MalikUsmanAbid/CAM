@@ -1,0 +1,202 @@
+# USMAN JARVIS — Phase 4B Plan: Real AI Brain
+
+## Scope
+
+Phase 4B replaces the Phase 4A deterministic planner with a provider-neutral, model-driven planner while preserving the task lifecycle, registry, permission engine, approval workflow, safe filesystem tools, memory repository, and `ToolExecutor`. The model is an untrusted proposal source; it never executes code or receives permission authority.
+
+This is a planning document only. No provider implementation or credential is introduced by this plan. Phase 4B remains local/mock-compatible and excludes shell, subprocesses, PowerShell, browser/Windows control, MCP, voice, accounts, deletion, autonomous internet/financial actions, and arbitrary code execution.
+
+## Current architecture baseline
+
+- `providers.py` currently exposes `ModelProvider.respond()` plus the credential-free `MockProvider` and a reserved cloud failure adapter.
+- `planner.py` defines `Planner`, `PlannedStep`, `DeterministicPlanner`, and registry-backed `ToolSelector`.
+- `orchestrator.py` owns bounded task execution and delegates every operation to `ToolExecutor`.
+- `tools.py` owns public registry metadata, Pydantic argument validation, safe-root enforcement, approval gating, timeouts, and structured execution results.
+- `permissions.py` and `memory.py` implement risk policy, single-use approvals, SQLite task/step/activity/approval persistence, and sensitive-content rejection.
+- `main.py` exposes chat, tools, approvals, memory, and Phase 4A task APIs.
+- The React dashboard currently supports mock chat, approvals, activity, and active task display.
+
+Phase 4B must keep all existing routes and tests passing.
+
+## Provider abstraction
+
+Add a separate model-facing protocol, rather than coupling the orchestrator to a vendor SDK:
+
+```python
+class BrainProvider(Protocol):
+    name: str
+    model: str
+    async def plan(self, request: ModelRequest) -> ModelResponse: ...
+```
+
+`ModelRequest` contains a bounded, typed context; `ModelResponse` contains only validated structured output. Provider adapters may later target a local runtime or cloud service, but the orchestrator sees only this protocol. Keep the current `ModelProvider.respond()` chat interface compatible; chat and task planning may share a provider factory but must have separate contracts.
+
+Initial implementations:
+
+- `MockBrainProvider`: deterministic structured responses for tests and development without credentials.
+- `ReservedBrainProvider` or equivalent safe-unavailable adapter for unconfigured providers.
+- A first real provider should be selected explicitly during implementation (prefer a local/free endpoint first); no provider should be silently enabled or require a key.
+
+Provider calls must have a timeout, bounded input/output tokens, cancellation support where available, normalized error classes (`unavailable`, `timeout`, `rate_limited`, `authentication_failed`, `context_too_large`, `malformed_response`, `internal_error`), and no raw response persistence.
+
+## Configuration design
+
+Extend environment-backed settings without storing secrets in SQLite, logs, prompts, or source:
+
+- `AI_PROVIDER` and `AI_MODEL`
+- optional local/provider `AI_ENDPOINT`
+- temperature/equivalent and maximum output tokens
+- model request timeout
+- optional `AI_API_KEY_REF` naming an external secret reference, never the secret value
+
+Existing `AI_API_KEY` compatibility must remain redacted and unused by the mock path. A future vault adapter may resolve a reference at request time; values must never enter task context, model logs, activity, memory, or frontend payloads. `.env.example` may document empty names only.
+
+## Strict structured response schema
+
+Create `model_contracts.py` with Pydantic models and a discriminated action union:
+
+```text
+ModelResponse
+  kind: final | action | clarification | complete
+  summary: short safe text
+  action?: ModelAction
+  question?: short clarification text
+
+ModelAction
+  tool_name: registry name
+  arguments: JSON object
+  rationale_summary: optional concise UI-safe summary
+```
+
+No hidden chain-of-thought, token traces, raw prompt, or unrestricted model text is persisted or displayed. `arguments` are still untrusted and must pass the existing registry Pydantic model. Unknown fields, oversized strings, unknown `kind`, unknown tools, malformed JSON, and multiple contradictory actions are rejected.
+
+## Context builder and trust boundaries
+
+Add `context_builder.py` to construct a bounded `ModelRequest` from:
+
+- the user request;
+- task status, current step, limits, and prior structured result summaries;
+- public registry metadata only (name, description, risk, approval requirement, input schema summary);
+- explicitly selected, size-limited memory records;
+- explicit system security rules and the response schema.
+
+The builder must label trust domains clearly:
+
+Trusted instructions: application security rules, registry metadata generated by code, permission state, and output schema.
+
+Untrusted data: user text, model output, memory content, file contents, tool results, and future external content.
+
+Untrusted data is placed in delimited data sections and never interpolated into executable instructions. Tool results are evidence, not commands. Memory retrieval is relevance- and byte-limited, includes record IDs/provenance, and cannot alter permissions, tools, limits, or approval state. Prompt-injection text is treated as ordinary data and never promoted to instructions.
+
+## Model planner integration
+
+Add `ModelPlanner` implementing the existing `Planner` protocol. It calls the provider, validates the structured response, and maps only `action` responses to `PlannedStep`; final/clarification/complete responses become explicit planner outcomes. `AgentOrchestrator` should depend on the existing planner protocol and receive either `DeterministicPlanner` or `ModelPlanner` from composition/configuration.
+
+The orchestrator remains responsible for:
+
+1. checking plan/output limits;
+2. discovering tools through `ToolRegistry`;
+3. validating arguments;
+4. invoking `ToolExecutor.execute` only;
+5. waiting for existing server-side approval when required;
+6. feeding safe structured result summaries back to the model for the next action;
+7. stopping at completion, clarification, failure, cancellation, or Phase 4A limits.
+
+There is no alternate approval flag, handler lookup, dynamic import, shell escape, or model-controlled permission path.
+
+## Chat and task modes
+
+Keep normal chat (`POST /api/v1/chat`) as a simple provider response path. Task mode uses the model planner/action loop and existing task endpoints. Both use the mock provider by default. A later UI mode selector may choose chat versus task; it must not change the security pipeline.
+
+## Failure handling and loop safety
+
+Map provider failures to safe task states and user-facing summaries. Do not expose authentication details or raw exception traces. Retry only bounded, classified provider failures before a dangerous action; never blindly repeat a medium/high-risk action. Preserve Phase 4A maximum steps, executions, repeated failures, and wall-clock timeout. Add model limits for context bytes, response size, provider calls per task, and repeated malformed responses. Unknown tools, invalid arguments, malformed output, context overflow, authentication failure, rejection, expiry, and approval replay are terminal or clarification outcomes—not automatic dangerous retries.
+
+## API and UI changes
+
+Preserve all Phase 1–4A APIs. Add only bounded, typed fields where needed:
+
+- `GET /api/v1/ai/status`: provider name, model, configured/available state, and capability flags; never key material.
+- Extend task status/steps with provider/model label, concise action summary, current tool, and model error class.
+- Existing task create/resume/cancel routes remain authoritative; approval endpoints remain unchanged.
+- Optional `POST /api/v1/tasks/{id}/clarify` only if a clarification response needs a typed continuation; otherwise reuse task creation.
+
+The dashboard should show provider/model status, task action summaries, current tool, structured result summary, approval state, and final response. It must never display hidden reasoning, raw prompts, API keys, full sensitive file content, or provider error secrets. Polling remains sufficient for Phase 4B; streaming can be added later through versioned task events.
+
+## Proposed files
+
+Create:
+
+- `services/agent_api/app/model_contracts.py` — strict response/request schemas and error classes.
+- `services/agent_api/app/context_builder.py` — bounded, labelled context construction and redaction.
+- `services/agent_api/app/model_planner.py` — `ModelPlanner` adapter to the existing `Planner` protocol.
+- `tests/test_phase4b.py` — provider, schema, injection, planner, failure, and regression tests.
+
+Change minimally:
+
+- `services/agent_api/app/providers.py`, `config.py` — provider interface/factory and safe configuration.
+- `services/agent_api/app/orchestrator.py`, `planner.py` — model response/clarification integration without bypassing executor.
+- `services/agent_api/app/schemas.py`, `main.py` — AI status and safe task metadata.
+- `services/agent_api/app/memory.py` — only bounded context queries or redacted metadata if required.
+- `apps/desktop/src/api.ts`, `App.tsx`, `styles.css`, `App.test.tsx` — provider/task action status.
+- `docs/SECURITY.md`, `docs/TOOL_SYSTEM.md`, `docs/ROADMAP.md`, `README.md` — update after implementation and verification.
+
+No new dependency is assumed; a provider SDK or HTTP client requires explicit review and must not be added merely to support a cloud service.
+
+## Testing strategy
+
+Backend tests must cover:
+
+- mock brain provider and deterministic structured outputs;
+- unavailable, timeout, rate-limit, authentication, context-size, malformed-response, and unexpected provider failures;
+- valid final/action/clarification/complete schemas;
+- malformed JSON, unknown fields/kinds, unknown tools, invalid arguments, oversized output;
+- model planner through the existing `Planner` interface;
+- low-risk execution, approval-required action, approval continuation, rejection, expiry, and replay;
+- step/execution/failure/provider-call limits;
+- memory/file/tool output injection remains data and cannot select tools or alter permissions;
+- no dynamic function execution, shell/subprocess access, or secret persistence;
+- all Phase 1–4A regression tests.
+
+Frontend tests should cover provider status, action summary, current tool, approval state, final/clarification/error states, loading behavior, and existing chat/activity/task/approval behavior.
+
+Runtime tests should start the backend with mock configuration, verify chat and Phase 4A tasks, exercise a provider-unavailable path, execute a low-risk model action, require approval for a write, reject/replay safely, and inspect activity for redaction.
+
+## Implementation order
+
+1. Define strict model contracts and normalized provider errors.
+2. Extend safe configuration and add mock/reserved brain providers.
+3. Build bounded labelled context with memory and tool metadata redaction.
+4. Implement `ModelPlanner` and validate provider responses.
+5. Integrate planner selection into the existing orchestrator without changing executor/policy boundaries.
+6. Add task/API AI status and safe structured summaries.
+7. Add minimal dashboard provider/action/status rendering.
+8. Add security, failure, provider, injection, approval, and regression tests.
+9. Run full backend/frontend/runtime verification and secret scan.
+10. Review diff and create the Phase 4B checkpoint only after all acceptance criteria pass.
+
+## Risks and edge cases
+
+- A model may imitate system instructions in memory/file/tool output; delimit and label all untrusted data.
+- Provider output may be valid JSON but semantically unsafe; registry, schema, permission, and approval checks remain mandatory.
+- Provider retries can duplicate intent; use task/step IDs and never repeat dangerous actions automatically.
+- Context truncation may omit important evidence; prefer safe failure or clarification over silent omission.
+- Local endpoints may be unavailable or return unexpected content; fail closed with bounded timeouts.
+- API-key references may be misconfigured; report unavailable without revealing resolved values.
+- Concurrent approval/resume remains governed by the existing atomic approval consumption.
+- Streaming can complicate partial output; defer it until a versioned event contract is required.
+
+## Exact definition of done
+
+Phase 4B is complete only when:
+
+1. A specifically documented first provider is integrated behind the provider protocol, with the mock provider still usable without credentials.
+2. Model output is strictly structured and validated into final/action/clarification/complete outcomes.
+3. Model-driven actions use only public registry tools and existing argument validation.
+4. Every action still passes the existing permission and single-use approval workflow.
+5. Context builder bounds and labels user, memory, file, and tool data as untrusted; no hidden chain-of-thought is stored or shown.
+6. Provider errors, malformed output, limits, cancellation, rejection, expiry, replay, and failures fail safely.
+7. Configuration supports local/free operation and keeps secrets out of source, SQLite, logs, prompts, and UI.
+8. Task/chat APIs and dashboard expose only concise safe status/action summaries.
+9. All Phase 1–4A regression tests plus Phase 4B security/provider/runtime tests pass; Ruff, compile, ESLint, TypeScript, and production build pass.
+10. A reviewed local checkpoint named `phase-4b-real-ai-brain` is created only after verification; nothing is pushed.

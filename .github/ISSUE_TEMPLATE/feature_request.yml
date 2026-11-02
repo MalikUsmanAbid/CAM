@@ -1,0 +1,23 @@
+name: Feature request
+description: Explain a user problem and a focused improvement.
+title: "[Feature]: "
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem should CAM solve?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed workflow
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance criteria and permission implications
+      description: Explain how to verify it and whether it accesses accounts, sends data or executes commands.
+    validations:
+      required: true

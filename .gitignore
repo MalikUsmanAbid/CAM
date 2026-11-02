@@ -1,0 +1,41 @@
+# Environment and secrets
+.env
+.env.*
+!.env.example
+
+# Python
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.coverage
+htmlcov/
+*.egg-info/
+data/
+workspace/
+
+# Node/Vite
+node_modules/
+dist/
+coverage/
+
+# Native generated artifacts; keep source and dependency lockfiles reviewable.
+apps/desktop/src-tauri/target/
+apps/desktop/src-tauri/binaries/*.exe
+apps/desktop/src-tauri/gen/
+
+# Editors and OS
+.vscode/
+.idea/
+Thumbs.db
+
+# Publication safety
+.ruff_cache/
+*.sqlite
+*.sqlite3
+*.db
+*.pem
+*.key
+*.pfx
+*.log
+docs/evidence/

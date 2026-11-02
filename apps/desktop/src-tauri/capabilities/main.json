@@ -1,0 +1,7 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "main-window",
+  "description": "Local dashboard only. No webview filesystem, shell or arbitrary process permissions.",
+  "windows": ["main"],
+  "permissions": ["core:default", "notification:default"]
+}

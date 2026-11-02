@@ -1,0 +1,45 @@
+name: Bug report
+description: Report a reproducible problem using disposable data.
+title: "[Bug]: "
+body:
+  - type: markdown
+    attributes:
+      value: "For security vulnerabilities use SECURITY.md. Do not include keys, private files or raw diagnostic exports."
+  - type: input
+    id: version
+    attributes:
+      label: CAM version or commit
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: Environment
+      description: Windows version, installed/portable/development mode, provider name without credentials.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Steps to reproduce
+      description: Use a temporary workspace and no personal data.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected and actual behavior
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Sanitized evidence
+      description: Optional screenshot or error text. Remove secrets, account details and private paths.
+  - type: checkboxes
+    id: privacy
+    attributes:
+      label: Privacy check
+      options:
+        - label: I removed credentials and personal data from this report.
+          required: true

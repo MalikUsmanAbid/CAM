@@ -1,0 +1,40 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "usman-jarvis"
+version = "0.1.0"
+description = "USMAN JARVIS Phase 1 local AI assistant foundation"
+requires-python = ">=3.12"
+dependencies = [
+  "fastapi>=0.115,<1.0",
+  "httpx>=0.27,<1.0",
+  "uvicorn[standard]>=0.30,<1.0",
+  "pathspec==0.12.1",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=8.0,<9.0",
+  "ruff>=0.8,<1.0",
+]
+browser = ["playwright>=1.63,<2.0"]
+computer = ["pywinauto>=0.6.9,<0.7"]
+mcp = ["mcp>=2.0,<3.0"]
+recovery = ["cryptography>=46,<51"]
+
+[tool.setuptools.packages.find]
+include = ["services*"]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I"]
+ignore = ["E501"]
