@@ -1,3 +1,5 @@
+<p align="center"><img src="https://raw.githubusercontent.com/MalikUsmanAbid/MalikUsmanAbid/main/assets/usman-dev-logo.png" alt="Usman Dev — Full-Stack Developer" width="120" /></p>
+
 <p align="center">
   <img src="docs/assets/cam-banner.svg" alt="CAM — Your workspace. Your models. Your control." width="100%" />
 </p>
@@ -127,4 +129,8 @@ Read [CONTRIBUTING.md](CONTRIBUTING.md) before opening a pull request, use [SUPP
 
 Maintained by [MalikUsmanAbid](https://github.com/MalikUsmanAbid). The banner is original CAM artwork. Third-party dependencies retain their respective licenses. See the [public-source checklist](docs/PUBLIC_RELEASE_CHECKLIST.md) for visibility, license and release gates.
 
-Developer contact: [usman234dev@gmail.com](mailto:usman234dev@gmail.com). Project source is released under the [MIT License](LICENSE).
+Developer contact: [usmandev234@gmail.com](mailto:usmandev234@gmail.com). Project source is released under the [MIT License](LICENSE).
+
+## Developer contact
+
+[Email](mailto:usmandev234@gmail.com) · [WhatsApp](https://wa.me/923157543808) · [Facebook](https://www.facebook.com/profile.php?id=61594398140960) · [GitHub](https://github.com/MalikUsmanAbid)
