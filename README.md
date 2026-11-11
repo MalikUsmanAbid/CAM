@@ -8,6 +8,29 @@
 
 ---
 
+
+## Visual project guide
+
+A Windows-first personal assistant with a React/TypeScript interface, FastAPI backend, SQLite persistence and Tauri shell source. Project workflows, model choice and approval-gated execution remain clearly marked as a development preview.
+
+These five original illustrations summarize the documented project. They are **documentation graphics, not application screenshots or evidence of production readiness**.
+
+![CAM project overview](docs/portfolio/01-cover.svg)
+
+| Features | Architecture |
+| --- | --- |
+| ![Feature overview](docs/portfolio/02-features.svg) | ![Architecture overview](docs/portfolio/03-architecture.svg) |
+
+| Workflow | Technology |
+| --- | --- |
+| ![Workflow overview](docs/portfolio/04-workflow.svg) | ![Technology overview](docs/portfolio/05-stack.svg) |
+
+**Scope and verification:** Development preview. Mock output is not live inference; Windows release and unsupported integrations retain their existing gates.
+
+[Developer portfolio](https://developer-folio-nov04-ab.glovedlark8.chatgpt.site) (ChatGPT sign-in required) · [Usman Dev](https://github.com/MalikUsmanAbid)
+
+---
+
 ## Meet CAM
 
 CAM is a Windows personal assistant built with React, TypeScript, FastAPI, SQLite and a Tauri desktop shell. Formerly USMAN JARVIS.
