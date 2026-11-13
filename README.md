@@ -1,35 +1,8 @@
-<p align="center"><img src="https://raw.githubusercontent.com/MalikUsmanAbid/MalikUsmanAbid/main/assets/usman-dev-logo.png" alt="Usman Dev — Full-Stack Developer" width="120" /></p>
-
-<p align="center">
-  <img src="docs/assets/cam-banner.svg" alt="CAM — Your workspace. Your models. Your control." width="100%" />
-</p>
+# CAM · Windows Personal Assistant
 
 <p align="center"><strong>A Windows personal assistant for project work, model choice and controlled execution.</strong><br />Development preview · Formerly USMAN JARVIS</p>
 
 <p align="center"><a href="docs/QUICKSTART.md">Get started</a> · <a href="docs/README.md">Documentation</a> · <a href="docs/STATUS.md">Current status</a> · <a href="CONTRIBUTING.md">Contribute</a> · <a href="SECURITY.md">Security</a></p>
-
----
-
-
-## Visual project guide
-
-A Windows-first personal assistant with a React/TypeScript interface, FastAPI backend, SQLite persistence and Tauri shell source. Project workflows, model choice and approval-gated execution remain clearly marked as a development preview.
-
-These five original illustrations summarize the documented project. They are **documentation graphics, not application screenshots or evidence of production readiness**.
-
-![CAM project overview](docs/portfolio/01-cover.svg)
-
-| Features | Architecture |
-| --- | --- |
-| ![Feature overview](docs/portfolio/02-features.svg) | ![Architecture overview](docs/portfolio/03-architecture.svg) |
-
-| Workflow | Technology |
-| --- | --- |
-| ![Workflow overview](docs/portfolio/04-workflow.svg) | ![Technology overview](docs/portfolio/05-stack.svg) |
-
-**Scope and verification:** Development preview. Mock output is not live inference; Windows release and unsupported integrations retain their existing gates.
-
-[Developer portfolio](https://malikusmandev.vercel.app) · [Usman Dev](https://github.com/MalikUsmanAbid)
 
 ---
 
@@ -56,14 +29,7 @@ Existing internal package identifiers and `%LOCALAPPDATA%/USMANJARVIS` data path
 
 *Actual React UI with disposable fixture responses. Mock mode is shown; no live AI inference or personal data is represented.*
 
-<details>
-<summary><strong>First launch: choose your AI or set it up later</strong></summary>
-
-![CAM first-run setup with Gemini, Claude and NVIDIA selection](docs/assets/cam-setup.jpg)
-
-*Actual UI with a simulated desktop bridge for documentation. No API key was entered. This is not packaged Windows or provider acceptance evidence.*
-
-</details>
+[View first-run setup](docs/assets/cam-setup.jpg)
 
 [Screenshot provenance →](docs/SCREENSHOTS.md)
 
@@ -79,7 +45,7 @@ Existing internal package identifiers and `%LOCALAPPDATA%/USMANJARVIS` data path
 
 ## How execution flows
 
-![Execution pipeline: CAM workspace, authenticated local API, model proposal, current policy and scoped approval, controlled executor, then result and audit evidence](docs/assets/execution-flow.svg)
+[View the execution flow](docs/assets/execution-flow.svg)
 
 The backend authorizes actions. Models, repository instructions, retrieved documents and MCP results cannot grant permissions.
 
@@ -128,8 +94,6 @@ CAM is licensed under the [MIT License](LICENSE). Third-party dependencies retai
 Read [CONTRIBUTING.md](CONTRIBUTING.md) before opening a pull request, use [SUPPORT.md](SUPPORT.md) for ordinary bugs, and report vulnerabilities through the private route described in [SECURITY.md](SECURITY.md). Never upload credentials or personal persistence.
 
 Maintained by [MalikUsmanAbid](https://github.com/MalikUsmanAbid). The banner is original CAM artwork. Third-party dependencies retain their respective licenses. See the [public-source checklist](docs/PUBLIC_RELEASE_CHECKLIST.md) for visibility, license and release gates.
-
-Developer contact: [usmandev234@gmail.com](mailto:usmandev234@gmail.com). Project source is released under the [MIT License](LICENSE).
 
 ## Developer contact
 
